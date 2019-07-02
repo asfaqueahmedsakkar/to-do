@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_to_do_app/SignInUpScreen.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -10,6 +11,22 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int id = 0;
+  List<CategoryWithCountModel> models;
+
+  @override
+  void initState() {
+    super.initState();
+
+    models = new List();
+    models.add(
+      CategoryWithCountModel(
+        backgroundColor: Colors.orange,
+        categoryName: "Work",
+        count: "7",
+        icon: MdiIcons.folderOpenOutline,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,6 +76,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   decoration: BoxDecoration(
                     color: Colors.greenAccent,
                     borderRadius: BorderRadius.circular(8.0),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.green[300],
+                        blurRadius: 8.0,
+                      )
+                    ],
                   ),
                   child: Column(
                     children: <Widget>[
@@ -129,19 +152,17 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           SliverGrid(
-            gridDelegate:
-                SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              childAspectRatio: 1.1,
+            ),
             delegate: SliverChildBuilderDelegate(
               (context, index) {
-                return Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Container(
-                    height: 200.0,
-                    color: Colors.blue,
-                  ),
+                return new CategoryWithCount(
+                  model: models[index],
                 );
               },
-              childCount: 20,
+              childCount: models.length,
             ),
           )
         ],
@@ -171,6 +192,100 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class CategoryWithCountModel {
+  Color backgroundColor;
+  String categoryName;
+  String count;
+  IconData icon;
+
+  CategoryWithCountModel({
+    @required this.backgroundColor,
+    @required this.categoryName,
+    @required this.count,
+    @required this.icon,
+  });
+}
+
+class CategoryWithCount extends StatelessWidget {
+  final CategoryWithCountModel model;
+
+  const CategoryWithCount({
+    Key key,
+    this.model,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8.0),
+          boxShadow: [
+            BoxShadow(
+              color: model.backgroundColor.withOpacity(0.8),
+              blurRadius: 8.0,
+            ),
+          ],
+        ),
+        child: Stack(
+          children: <Widget>[
+            Container(
+              margin: EdgeInsets.all(0.5),
+              decoration: BoxDecoration(
+                color: model.backgroundColor.withOpacity(0.4),
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+            ),
+            Align(
+              alignment: Alignment.bottomRight,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Icon(
+                  MdiIcons.heartPulse,
+                  size: 90.0,
+                  color: Colors.white24,
+                ),
+              ),
+            ),
+            Align(
+              alignment: Alignment.topLeft,
+              child: Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Text(
+                  model.categoryName,
+                  style: TextStyle(
+                    fontSize: 16.0,
+                    color: Colors.black45,
+                    fontWeight: FontWeight.w400,
+                    letterSpacing: 0.2,
+                  ),
+                ),
+              ),
+            ),
+            Align(
+              alignment: Alignment.bottomLeft,
+              child: Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Text(
+                  model.count,
+                  style: TextStyle(
+                    fontSize: 32.0,
+                    color: model.backgroundColor.withOpacity(0.8),
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.7,
+                  ),
+                ),
+              ),
+            )
+          ],
+        ),
       ),
     );
   }
