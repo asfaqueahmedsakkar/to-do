@@ -18,18 +18,11 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
 
     models = new List();
-    models.add(
-      CategoryWithCountModel(
-        backgroundColor: Colors.orange,
-        categoryName: "Work",
-        count: "7",
-        icon: MdiIcons.folderOpenOutline,
-      ),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
+    _populateModel();
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -195,6 +188,42 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+
+  void _populateModel() {
+    models.clear();
+    models.add(
+      CategoryWithCountModel(
+        backgroundColor: Colors.orange,
+        categoryName: "Work",
+        count: "7",
+        icon: MdiIcons.folderOpenOutline,
+      ),
+    );
+    models.add(
+      CategoryWithCountModel(
+        backgroundColor: Colors.blue,
+        categoryName: "Personal",
+        count: "9",
+        icon: Icons.person,
+      ),
+    );
+    models.add(
+      CategoryWithCountModel(
+        backgroundColor: Colors.deepOrange,
+        categoryName: "Hospital",
+        count: "2",
+        icon: Icons.local_hospital,
+      ),
+    );
+    models.add(
+      CategoryWithCountModel(
+        backgroundColor: Colors.green,
+        categoryName: "Study",
+        count: "9",
+        icon: Icons.book,
+      ),
+    );
+  }
 }
 
 class CategoryWithCountModel {
@@ -248,7 +277,7 @@ class CategoryWithCount extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Icon(
-                  MdiIcons.heartPulse,
+                  model.icon,
                   size: 90.0,
                   color: Colors.white24,
                 ),
