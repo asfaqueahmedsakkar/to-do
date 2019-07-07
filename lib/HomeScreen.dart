@@ -7,6 +7,7 @@ import 'package:flutter_to_do_app/CategoryWithCountModel.dart';
 import 'package:flutter_to_do_app/HomePage.dart';
 import 'package:flutter_to_do_app/SignInUpScreen.dart';
 import 'package:flutter_to_do_app/TodaysTaskPage.dart';
+import 'package:flutter_to_do_app/TodoTask.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -16,16 +17,18 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int id = 0;
-  List<CategoryWithCountModel> models;
-  List<CategoryModel> categories;
+  List<CategoryWithCountModel> _models;
+  List<CategoryModel> _categories;
+  List<TodoTask> _tasks;
   PageController _pageController;
 
   @override
   void initState() {
     super.initState();
-    models = new List();
-    categories = new List();
+    _models = new List();
+    _categories = new List();
     _pageController = new PageController();
+    _tasks = new List();
   }
 
   @override
@@ -69,40 +72,44 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: PageView(
         controller: _pageController,
+        physics: NeverScrollableScrollPhysics(),
         children: <Widget>[
-          HomePage(models: models),
-          AddTaskPage(categories: categories),
-          TodaysTaskPage(),
+          HomePage(models: _models),
+          AddTaskPage(categories: _categories),
+          TodaysTaskPage(
+            tasks: _tasks,
+          ),
         ],
       ),
     );
   }
 
   void _populateModel() {
-    models.clear();
-    categories.clear();
-    categories.add(
+    _models.clear();
+    _categories.clear();
+    _tasks.clear();
+    _categories.add(
       CategoryModel(
         backgroundColor: Colors.orange,
         categoryName: "Work",
         icon: MdiIcons.folderOpenOutline,
       ),
     );
-    categories.add(
+    _categories.add(
       CategoryModel(
         backgroundColor: Colors.blue,
         categoryName: "Personal",
         icon: Icons.person,
       ),
     );
-    categories.add(
+    _categories.add(
       CategoryModel(
         backgroundColor: Colors.deepOrange,
         categoryName: "Hospital",
         icon: Icons.local_hospital,
       ),
     );
-    categories.add(
+    _categories.add(
       CategoryModel(
         backgroundColor: Colors.green,
         categoryName: "Study",
@@ -110,13 +117,22 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
 
-    for (CategoryModel category in categories)
-      models.add(
+    for (CategoryModel category in _categories) {
+      _models.add(
         CategoryWithCountModel(
           count: "2",
           category: category,
         ),
       );
+      _tasks.add(
+        TodoTask(
+          category: category,
+          name: "Test Work",
+          message:
+              "I have read many questions about how we can obtain the dimensions or positions of the widgets that we have on screen.In some cases we find ourselves in situations in which we want to achieve that for any reason.",
+        ),
+      );
+    }
   }
 }
 
