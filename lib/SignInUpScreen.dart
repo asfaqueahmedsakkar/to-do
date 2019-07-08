@@ -1,4 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_to_do_app/Dialog/flutter_dialog.dart';
 import 'package:flutter_to_do_app/HomeScreen.dart';
 import 'package:flutter_to_do_app/SignInPage.dart';
 import 'package:flutter_to_do_app/SignUpPage.dart';
@@ -10,10 +13,13 @@ class SignInUpScreen extends StatefulWidget {
 
 class _SignInUpScreenState extends State<SignInUpScreen> {
   PageController _pageController;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  GlobalKey<FlutterDialogState> _dialogKey;
 
   @override
   void initState() {
     _pageController = new PageController();
+    _dialogKey = new GlobalKey();
     super.initState();
   }
 
@@ -25,47 +31,113 @@ class _SignInUpScreenState extends State<SignInUpScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Column(
-        children: <Widget>[
-          SizedBox(
-            height: 80.0,
-          ),
-          Padding(
-            padding: const EdgeInsets.only(left: 32.0),
-            child: AppTitle(),
-          ),
-          Expanded(
-            child: PageView(
-              controller: _pageController,
-              physics: NeverScrollableScrollPhysics(),
-              children: <Widget>[
-                SignInPage(
-                  createAccount: () {
-                    _pageController.nextPage(
-                      duration: Duration(milliseconds: 500),
-                      curve: Curves.easeIn,
-                    );
-                  },
-                  onSignIn: () {
-                    Navigator.pushReplacement(context,
-                        MaterialPageRoute(builder: (context) => HomeScreen()));
-                  },
-                ),
-                SignUpPage(
-                  logIn: () {
-                    _pageController.previousPage(
-                      duration: Duration(milliseconds: 500),
-                      curve: Curves.easeOut,
-                    );
-                  },
-                ),
-              ],
+    return FlutterDialog(
+      child: Scaffold(
+        body: Column(
+          children: <Widget>[
+            SizedBox(
+              height: 80.0,
             ),
-          ),
-        ],
+            Padding(
+              padding: const EdgeInsets.only(left: 32.0),
+              child: AppTitle(),
+            ),
+            Expanded(
+              child: PageView(
+                controller: _pageController,
+                physics: NeverScrollableScrollPhysics(),
+                children: <Widget>[
+                  SignInPage(
+                    createAccount: () {
+                      _pageController.nextPage(
+                        duration: Duration(milliseconds: 500),
+                        curve: Curves.easeIn,
+                      );
+                    },
+                    onSignIn: _handleSignIn,
+                  ),
+                  SignUpPage(
+                    logIn: () {
+                      _pageController.previousPage(
+                        duration: Duration(milliseconds: 500),
+                        curve: Curves.easeOut,
+                      );
+                    },
+                    onSignUp: _handleSignUp,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
+      key: _dialogKey,
     );
+  }
+
+  _handleSignIn(String email, String password) async {
+    _dialogKey.currentState.showDialog(
+        title: Text("My To Do"), content: Text("Loading Please wait"));
+    _auth
+        .signInWithEmailAndPassword(email: email, password: password)
+        .catchError((e) {
+      PlatformException exception = e;
+      switch (exception.code) {
+        case "ERROR_WRONG_PASSWORD":
+          _dialogKey.currentState.showDialog(
+              title: Text("My To Do"), content: Text("Wrong Password"));
+          break;
+        case "ERROR_USER_NOT_FOUND":
+          _dialogKey.currentState.showDialog(
+              title: Text("My To Do"),
+              content: Text("No user found with this email address"));
+          break;
+        default:
+          _dialogKey.currentState.showDialog(
+              title: Text("My To Do"),
+              content: Text("No user found with this cradential"));
+          break;
+      }
+    }).then((user) {
+      if (user != null) {
+        _dialogKey.currentState.hide();
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (context) => HomeScreen()));
+      }
+    });
+  }
+
+  _handleSignUp(String email, String password) async {
+    _dialogKey.currentState.showDialog(
+        title: Text("My To Do"), content: Text("Loading Please wait"));
+    _auth
+        .createUserWithEmailAndPassword(email: email, password: password)
+        .catchError((e) {
+      PlatformException exception = e;
+      print(exception.code);
+      switch (exception.code) {
+        case "ERROR_WRONG_PASSWORD":
+          _dialogKey.currentState.showDialog(
+              title: Text("My To Do"), content: Text("Wrong Password"));
+          break;
+        case "ERROR_EMAIL_ALREADY_IN_USE":
+          _dialogKey.currentState.showDialog(
+              title: Text("My To Do"),
+              content: Text("Email address is already in use"));
+          break;
+        default:
+          _dialogKey.currentState.showDialog(
+              title: Text("My To Do"),
+              content: Text("No user found with this cradential"));
+          break;
+      }
+    }).then((user) {
+      if (user != null) {
+        _dialogKey.currentState.hide();
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (context) => HomeScreen()));
+      }
+    });
   }
 }
 
@@ -151,4 +223,3 @@ class AppTitle extends StatelessWidget {
     );
   }
 }
-

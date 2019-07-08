@@ -2,15 +2,36 @@ import 'package:flutter/material.dart';
 import 'package:flutter_to_do_app/FullButton.dart';
 import 'package:flutter_to_do_app/SignInUpScreen.dart';
 
-class SignUpPage extends StatelessWidget {
+class SignUpPage extends StatefulWidget {
   final Function() logIn;
-  final Function() onSignUp;
+  final Function(String emaill, String password) onSignUp;
 
   const SignUpPage({
     Key key,
     @required this.logIn,
     this.onSignUp,
   }) : super(key: key);
+
+  @override
+  _SignUpPageState createState() => _SignUpPageState();
+}
+
+class _SignUpPageState extends State<SignUpPage> {
+  TextEditingController _emailController;
+  TextEditingController _passwordController;
+  TextEditingController _confirmPasswordController;
+
+  GlobalKey<FormState> _key;
+  bool _autoValidate = false;
+
+  @override
+  void initState() {
+    _emailController = new TextEditingController();
+    _passwordController = new TextEditingController();
+    _confirmPasswordController = new TextEditingController();
+    _key = new GlobalKey();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +59,7 @@ class SignUpPage extends StatelessWidget {
                 ),
               ),
               GestureDetector(
-                onTap: logIn,
+                onTap: widget.logIn,
                 child: Container(
                   color: Colors.transparent,
                   child: Text(
@@ -141,33 +162,94 @@ class SignUpPage extends StatelessWidget {
             ),
           ),
         ),
-        TextFormField(
-          decoration: _getInputDecoration("Email"),
-          style: _getTextStyle(),
-        ),
-        SizedBox(
-          height: 32.0,
-        ),
-        TextFormField(
-          decoration: _getInputDecoration("Password"),
-          style: _getTextStyle(),
-        ),
-        SizedBox(
-          height: 32.0,
-        ),
-        TextFormField(
-          decoration: _getInputDecoration("Confirm Password"),
-          style: _getTextStyle(),
+        Form(
+          key: _key,
+          autovalidate: _autoValidate,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              TextFormField(
+                decoration: _getInputDecoration("Email"),
+                style: _getTextStyle(),
+                validator: validateEmail,
+                controller: _emailController,
+              ),
+              SizedBox(
+                height: 32.0,
+              ),
+              TextFormField(
+                decoration: _getInputDecoration("Password"),
+                style: _getTextStyle(),
+                validator: validatePassword,
+                controller: _passwordController,
+              ),
+              SizedBox(
+                height: 32.0,
+              ),
+              TextFormField(
+                decoration: _getInputDecoration("Confirm Password"),
+                style: _getTextStyle(),
+                validator: validateConfirmPassword,
+                controller: _confirmPasswordController,
+              ),
+            ],
+          ),
         ),
         SizedBox(
           height: 48.0,
         ),
         FullButton(
-            onPress: onSignUp, title: "Sign up", color: Colors.lightBlueAccent),
+            onPress: () {
+              if (_key.currentState.validate()) {
+                widget.onSignUp(
+                  _emailController.text,
+                  _passwordController.text.isEmpty
+                      ? "abcdefghijklmnopqrstuvwxyz1213"
+                      : _passwordController.text,
+                );
+              } else {
+                if (!_autoValidate)
+                  setState(() {
+                    _autoValidate = true;
+                  });
+              }
+            },
+            title: "Sign up",
+            color: Colors.lightBlueAccent),
         SizedBox(
           height: 32.0,
         ),
       ],
     );
+  }
+
+  String validateEmail(String value) {
+    Pattern pattern =
+        r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
+    RegExp regex = new RegExp(pattern);
+    if (!regex.hasMatch(value)) {
+      return 'Email address not valid';
+    } else {
+      return null;
+    }
+  }
+
+  String validatePassword(String value) {
+    if (value.length < 6) {
+      return 'Password not valid';
+    } else {
+      return null;
+    }
+  }
+
+  String validateConfirmPassword(String value) {
+    print(value);
+    print(_passwordController.text);
+    if (value.compareTo(_passwordController.text) != 0 ||
+        value.isEmpty) {
+      return "Passwords didn't matched";
+    } else {
+      return null;
+    }
   }
 }

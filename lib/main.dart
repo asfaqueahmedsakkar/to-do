@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_to_do_app/SignInUpScreen.dart';
+import 'package:flutter_to_do_app/SplashScreen.dart';
 
 void main() => runApp(MyApp());
 
@@ -26,7 +26,7 @@ class MyApp extends StatelessWidget {
           color: Color(0xFF4ce5ae),
         ),
       ),
-      home: SignInUpScreen(),
+      home: SplashScreen(),
     );
   }
 }

@@ -1,11 +1,14 @@
 import 'dart:math';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_to_do_app/AddTaskPage.dart';
 import 'package:flutter_to_do_app/CategoryModel.dart';
 import 'package:flutter_to_do_app/CategoryWithCountModel.dart';
+import 'package:flutter_to_do_app/Dialog/flutter_dialog.dart';
 import 'package:flutter_to_do_app/HomePage.dart';
 import 'package:flutter_to_do_app/SignInUpScreen.dart';
+import 'package:flutter_to_do_app/SplashScreen.dart';
 import 'package:flutter_to_do_app/TodaysTaskPage.dart';
 import 'package:flutter_to_do_app/TodoTask.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
@@ -21,6 +24,8 @@ class _HomeScreenState extends State<HomeScreen> {
   List<CategoryModel> _categories;
   List<TodoTask> _tasks;
   PageController _pageController;
+  FirebaseAuth _auth = FirebaseAuth.instance;
+  GlobalKey<FlutterDialogState> _dialogKey;
 
   @override
   void initState() {
@@ -29,58 +34,83 @@ class _HomeScreenState extends State<HomeScreen> {
     _categories = new List();
     _pageController = new PageController();
     _tasks = new List();
+    _dialogKey = new GlobalKey();
   }
 
   @override
   Widget build(BuildContext context) {
     _populateModel();
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        title: AppTitle(),
-        actions: <Widget>[
-          IconButton(icon: Icon(Icons.more_vert), onPressed: null)
-        ],
-      ),
-      bottomNavigationBar: BottomAppBar(
-        child: BottomNavigationBar(
-          unselectedFontSize: 10,
-          selectedFontSize: 12,
-          unselectedItemColor: Colors.grey,
-          currentIndex: id,
-          onTap: (id) {
-            setState(() {
-              _pageController.jumpToPage(id);
-              this.id = id;
-            });
-          },
-          items: [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.dashboard),
-              title: Text("Home"),
+    return FlutterDialog(
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          title: AppTitle(),
+          actions: <Widget>[
+            IconButton(
+              tooltip: "Log out",
+              icon: Icon(
+                Icons.power_settings_new,
+                color: Colors.grey,
+                size: 30.0,
+              ),
+              onPressed: () async {
+                _dialogKey.currentState.showDialog(
+                  title: Text("My To Do"),
+                  content: Text("Signing out"),
+                );
+                await _auth.signOut();
+                _dialogKey.currentState.hide();
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => SplashScreen(),
+                  ),
+                );
+              },
             ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.add_circle_outline),
-              title: Text("Add Task"),
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.playlist_add_check),
-              title: Text("Tasks"),
+          ],
+        ),
+        bottomNavigationBar: BottomAppBar(
+          child: BottomNavigationBar(
+            unselectedFontSize: 10,
+            selectedFontSize: 12,
+            unselectedItemColor: Colors.grey,
+            currentIndex: id,
+            onTap: (id) {
+              setState(() {
+                _pageController.jumpToPage(id);
+                this.id = id;
+              });
+            },
+            items: [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.dashboard),
+                title: Text("Home"),
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.add_circle_outline),
+                title: Text("Add Task"),
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.playlist_add_check),
+                title: Text("Tasks"),
+              ),
+            ],
+          ),
+        ),
+        body: PageView(
+          controller: _pageController,
+          physics: NeverScrollableScrollPhysics(),
+          children: <Widget>[
+            HomePage(models: _models),
+            AddTaskPage(categories: _categories),
+            TodaysTaskPage(
+              tasks: _tasks,
             ),
           ],
         ),
       ),
-      body: PageView(
-        controller: _pageController,
-        physics: NeverScrollableScrollPhysics(),
-        children: <Widget>[
-          HomePage(models: _models),
-          AddTaskPage(categories: _categories),
-          TodaysTaskPage(
-            tasks: _tasks,
-          ),
-        ],
-      ),
+      key: _dialogKey,
     );
   }
 
